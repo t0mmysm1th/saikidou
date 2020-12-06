@@ -26,12 +26,6 @@
 
 3. Carefully connect your button to the GPIO pins, then turn on your raspi
 
-4. Install and enable cron
-    ```
-    sudo pacman -S cronie
-    sudo systemctl enable --now cronie.service
-    ```
-
 
 ## Setup
 1. Copy the contents of the Saikidou script to your user's home folder
@@ -39,22 +33,40 @@
     curl https://raw.githubusercontent.com/t0mmysm1th/saikidou/main/saikidou_reboot-script.py -o ~/saikidou_reboot-script.py
     ```
 
-2. Create a temp file for `root` crontab (used to send contents to crontab file)
-
-    *Change **PATH_TO_SCRIPT**, **YOUR_USER** and arguments as needed*
+2. Create a new systemd service:
     ```
-    echo -e '#Start Saikidou\n@reboot /usr/bin/python /PATH_TO_SCRIPT/saikidou_reboot-script.py --user YOUR_USER --safemode --type reboot' > root_crontab.txt
+    sudo systemctl edit --force --full saikidou.service
     ```
 
-3. Install root's crontab using the contents of `root_crontab.txt`
+    *Insert the following details (Change **PATH_TO_SCRIPT**, **YOUR_USER** and arguments as needed)*
+    *Use `Ctrl+X` + `Y` to save and exit when you finished editing*
     ```
-    sudo crontab -u root root_crontab.txt
+    [Unit]
+    Description=Saikidou Reboot Script
+    Before=network.target
+    After=umount.target
+    
+    [Service]
+    ExecStartPre=/bin/sleep 10
+    ExecStart=/usr/bin/python /PATH_TO_SCRIPT/saikidou_reboot-script.py --user YOUR_USER --safemode --type reboot
+    Restart=always
+    
+    [Install]
+    WantedBy=multi-user.target
+    ```
+
+3. Enable the service:
+    ```
+    sudo systemctl enable saikidou.service
     
     #Stop Dojo via GUI, then reboot system
     reboot
     
     #After reboot, you can check if the script is running:
     ps aux | grep saikidou
+    
+    #To check service status:
+    systemctl saikidou status
     ```
 
 4. Tail the log file, then test the button
@@ -62,7 +74,6 @@
     sudo tail -f /var/log/saikidou_reboot-script.log
     
     #Check help section for details on arguments
-    
     ```
 
 ## Help & Examples
