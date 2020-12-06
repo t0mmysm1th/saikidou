@@ -156,7 +156,7 @@ def Shutdown(channel):
                 if args.type == 'shutdown' or args.forced_type == 'shutdown':
                     logging.info('FORCED: Shutting down system')
                     if not args.debug:
-                        os.system("shutdown -s -t 0")
+                        os.system("shutdown now")
                     else:
                         logging.debug('FORCED: Skipping System shutdown due to "debug" argument')
                 else:
